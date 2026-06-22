@@ -60,13 +60,15 @@ class XMFNode:
         contained_items = rw.vlq()
         header_length = rw.vlq()
 
-        # metadata
+        # metadata (TODO)
+        '''
         metaio = io.BytesIO(rw.read(rw.vlq()))
         meta = ReadWrapper(metaio)
         assert meta.vlq() == 0 # standard field only for now
         if StandardField(meta.vlq()) == StandardField.XMF_FILE_TYPE:
             print(f'xmf type {meta.vlq()} {meta.vlq()}')
         assert meta.vlq() == 0 # universal only for now
+        '''
 
         f.seek(pos + header_length)
         reference_type = rw.vlq()
@@ -105,9 +107,17 @@ class XMFFile:
 
 
 if __name__ == '__main__':
-    with open('Chimps On Mars.mxmf', 'rb') as f:
+    import sys
+    with open(sys.argv[1], 'rb') as f:
         breakpoint
         global xmf
         xmf = XMFFile(f)
+        for n in xmf.treeNode.contents:
+            c = n.contents
+            if c[0:4] == b'RIFF':
+                dls = open('out.dls', 'wb')
+                dls.write(c)
+                dls.close()
+                break
         #print(xmf.treeStart)
         #print(xmf.treeEnd)
